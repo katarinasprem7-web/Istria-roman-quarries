@@ -1,8 +1,8 @@
 {
   "meta": {
-    "title": "Roman Quarries of Istria — Geological and Petrographic Database",
+    "title": "Roman Quarries of Istria — Geoarchaeological Database",
     "short_title": "Roman Quarries of Istria",
-    "authors": "Your Name",
+    "authors": "Katarina Šprem",
     "institution": "",
     "version": "0.1-demo",
     "updated": "2026-11-08",
@@ -10,115 +10,10 @@
     "license_url": "https://creativecommons.org/licenses/by/4.0/",
     "doi": "",
     "contact": "",
-    "intro": "An open-access database of Roman-period quarries documented on the Istrian peninsula: locations, extraction traces and tool marks, geological layering, samples and petrographic analyses. THE RECORDS CURRENTLY SHOWN ARE DEMO EXAMPLES ONLY — replace them with real data in Editor mode.",
+    "intro": "An open-access database of Roman-period quarries documented on the Istrian peninsula: locations, extraction traces and tool marks, geological layering, samples and petrographic analyses.",
     "location_policy": "Exact coordinates of unprotected sites are generalised (about 1 km) or withheld to protect them from damage. Precise locations are available to researchers on request."
   },
   "quarries": [
-    {
-      "id": "DEMO-01",
-      "name": "Example quarry A (demo)",
-      "toponym": "Example toponym",
-      "municipality": "Municipality A",
-      "lat": 45.1012,
-      "lon": 13.7105,
-      "precision": "exact",
-      "status": "confirmed Roman",
-      "type": "quarry face / front",
-      "period": "1st–3rd c. AD",
-      "dating_basis": "Demo text: describe how the dating was established (associated finds, extraction technique, relation to dated monuments).",
-      "extraction": "Demo text: stepped extraction along bedding planes; blocks freed with separation trenches and wedges.",
-      "lithology": "Bioclastic limestone",
-      "formation": "Example formation",
-      "age": "Late Cretaceous (Cenomanian)",
-      "preservation": "moderate",
-      "protection": "Not registered",
-      "description": "DEMO RECORD. This entry shows how a quarry record looks. Replace it with your own documentation.",
-      "documented_by": "Your Name",
-      "last_visit": "2025-05-14",
-      "bibliography": [
-        "Author, A. (Year). Title of publication. Journal, vol(issue), pages."
-      ],
-      "toolmarks": [
-        {
-          "id": "TM-1",
-          "sector": "Front 1",
-          "type": "separation trench",
-          "tool": "Quarry pick",
-          "dimensions": "W 8–10 cm, D 35 cm",
-          "orientation": "N–S",
-          "notes": "Diagonal pick strokes on trench walls."
-        },
-        {
-          "id": "TM-2",
-          "sector": "Front 1",
-          "type": "wedge holes",
-          "tool": "Iron wedges",
-          "dimensions": "L 9 cm, spacing 20–25 cm",
-          "orientation": "E–W",
-          "notes": "Row of 6 sockets at the base of an extracted block."
-        },
-        {
-          "id": "TM-3",
-          "sector": "Front 2",
-          "type": "extraction negative (block scar)",
-          "tool": "",
-          "dimensions": "1.2 × 0.6 × 0.5 m",
-          "orientation": "",
-          "notes": ""
-        }
-      ],
-      "strata": [
-        {
-          "id": "L-1",
-          "bed": "1",
-          "thickness_cm": 80,
-          "lithology": "Limestone",
-          "dunham": "packstone",
-          "dip": "12",
-          "strike": "140",
-          "formation": "",
-          "age": "",
-          "notes": "Base of the exposed section."
-        },
-        {
-          "id": "L-2",
-          "bed": "2",
-          "thickness_cm": 45,
-          "lithology": "Limestone",
-          "dunham": "wackestone",
-          "dip": "12",
-          "strike": "140",
-          "formation": "",
-          "age": "",
-          "notes": ""
-        },
-        {
-          "id": "L-3",
-          "bed": "3",
-          "thickness_cm": 120,
-          "lithology": "Limestone",
-          "dunham": "grainstone",
-          "dip": "11",
-          "strike": "138",
-          "formation": "",
-          "age": "",
-          "notes": "Main exploited bed."
-        },
-        {
-          "id": "L-4",
-          "bed": "4",
-          "thickness_cm": 30,
-          "lithology": "Limestone",
-          "dunham": "mudstone",
-          "dip": "11",
-          "strike": "138",
-          "formation": "",
-          "age": "",
-          "notes": "Thin-bedded, not exploited."
-        }
-      ],
-      "media": []
-    },
     {
       "id": "001",
       "name": "Vinkuran",
@@ -152,82 +47,11 @@
           "notes": ""
         }
       ],
-      "strata": [
-        {
-          "id": "L-1",
-          "bed": "1",
-          "thickness_cm": 60,
-          "lithology": "Limestone",
-          "dunham": "mudstone",
-          "dip": "",
-          "strike": "",
-          "formation": "",
-          "age": "",
-          "notes": ""
-        },
-        {
-          "id": "L-2",
-          "bed": "2",
-          "thickness_cm": 90,
-          "lithology": "Limestone",
-          "dunham": "wackestone",
-          "dip": "",
-          "strike": "",
-          "formation": "",
-          "age": "",
-          "notes": ""
-        }
-      ],
-      "media": []
-    },
-    {
-      "id": "DEMO-03",
-      "name": "Example quarry C (demo)",
-      "toponym": "",
-      "municipality": "Municipality A",
-      "lat": 45.295,
-      "lon": 13.702,
-      "precision": "hidden",
-      "status": "presumed",
-      "type": "coastal quarry",
-      "period": "",
-      "dating_basis": "",
-      "extraction": "",
-      "lithology": "Rudist limestone",
-      "formation": "",
-      "age": "Late Cretaceous",
-      "preservation": "unknown",
-      "protection": "",
-      "description": "DEMO RECORD whose location is hidden from the public map.",
-      "documented_by": "Your Name",
-      "last_visit": "",
-      "bibliography": [],
-      "toolmarks": [],
       "strata": [],
       "media": []
     }
   ],
   "samples": [
-    {
-      "id": "S-001",
-      "quarry_id": "DEMO-01",
-      "bed": "3",
-      "sector": "Front 1",
-      "date": "2023-04-11",
-      "collector": "Your Name",
-      "storage": "Example collection, box 1",
-      "description": "Fresh hand specimen from the exploited bed."
-    },
-    {
-      "id": "S-002",
-      "quarry_id": "DEMO-01",
-      "bed": "1",
-      "sector": "Front 1",
-      "date": "2023-04-11",
-      "collector": "Your Name",
-      "storage": "Example collection, box 1",
-      "description": ""
-    },
     {
       "id": "CR-1",
       "quarry_id": "001",
@@ -250,36 +74,6 @@
     }
   ],
   "analyses": [
-    {
-      "id": "A-001",
-      "sample_id": "S-001",
-      "method": "thin section (optical microscopy)",
-      "lab": "Example lab",
-      "analyst": "",
-      "date": "2023-06-01",
-      "dunham": "grainstone",
-      "folk": "biosparite",
-      "microfacies": "Demo: bioclastic grainstone with benthic foraminifera",
-      "fossils": "Benthic foraminifera, echinoderm fragments",
-      "porosity": "",
-      "results": "Demo result text.",
-      "ref": ""
-    },
-    {
-      "id": "A-002",
-      "sample_id": "S-001",
-      "method": "stable isotopes (δ13C, δ18O)",
-      "lab": "Example lab",
-      "analyst": "",
-      "date": "2023-09-15",
-      "dunham": "",
-      "folk": "",
-      "microfacies": "",
-      "fossils": "",
-      "porosity": "",
-      "results": "δ13C = 2.1 ‰ VPDB; δ18O = −2.4 ‰ VPDB (demo values)",
-      "ref": ""
-    },
     {
       "id": "CR-1",
       "sample_id": "CR-1",
