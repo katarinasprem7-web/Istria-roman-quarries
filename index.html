@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roman Quarries of Istria — Database</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f3ee; --panel:#fffdf9; --ink:#2b2722; --muted:#6f675d; --line:#e2dbd0;
+  --accent:#8a5a2b; --accent-soft:#f1e6d8; --sea:#dfe9ee; --land:#efe8dc; --land-line:#c9bba5;
+  --ok:#3f7a4a; --warn:#a0702a; --bad:#9b3b30; --radius:10px;
+  --serif:'Source Serif 4',Georgia,serif; --sans:'Inter',system-ui,-apple-system,Segoe UI,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans)}
+a{color:var(--accent)}
+button{font:inherit;cursor:pointer}
+header{background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.hwrap{max-width:1280px;margin:0 auto;padding:14px 20px 0;display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 24px}
+.brand{flex:1 1 320px;padding-bottom:12px}
+.brand h1{font:600 22px/1.2 var(--serif);margin:0}
+.brand .sub{color:var(--muted);font-size:13px}
+nav{display:flex;gap:2px;flex-wrap:wrap}
+nav a{padding:10px 14px;text-decoration:none;color:var(--muted);border-bottom:2px solid transparent;font-weight:500;font-size:14px}
+nav a.on{color:var(--ink);border-bottom-color:var(--accent)}
+main{max-width:1280px;margin:0 auto;padding:20px}
+.banner{background:#fff4dc;border:1px solid #ecd49a;border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:14px}
+.banner.edit{background:#eaf1ea;border-color:#b9d2bd}
+.banner .sp{flex:1}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:18px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+h2{font:600 20px/1.25 var(--serif);margin:0 0 12px}
+h3{font:600 16px/1.3 var(--serif);margin:0 0 10px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 12px;color:var(--ink)}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:3px 9px;font-size:13px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.filters input,.filters select{padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;font:inherit;font-size:14px}
+.filters input[type=search]{min-width:220px;flex:1}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line);padding:8px}
+td{border-bottom:1px solid var(--line);padding:8px;vertical-align:top}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--accent-soft)}
+.tablewrap{overflow-x:auto}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.pill.g{background:#e3efe4;color:var(--ok)} .pill.y{background:#f6ecd8;color:var(--warn)} .pill.r{background:#f4e1de;color:var(--bad)} .pill.n{background:#ece9e4;color:var(--muted)}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px 18px;margin:0}
+.kv div dt{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.kv div dd{margin:2px 0 0;white-space:pre-wrap}
+.section{margin-top:18px}
+.sechead{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.sechead h3{margin:0;flex:1}
+/* map */
+.mapbox{position:relative;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--sea);height:620px;touch-action:none}
+.mapbox.mini{height:260px}
+.mapbox>svg{width:100%;height:100%;display:block;cursor:grab;user-select:none}
+.mapbox>svg.drag{cursor:grabbing}
+.maplegend svg{display:inline-block;vertical-align:middle}
+.mapbox.mini .maplegend{display:none}
+.mapctl{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:4px}
+.mapctl button{width:32px;height:32px;border:1px solid var(--line);background:#fff;border-radius:6px;font-size:17px;line-height:1}
+.maplegend{position:absolute;left:10px;bottom:10px;background:rgba(255,253,249,.94);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px}
+.maplegend span{display:inline-flex;align-items:center;gap:6px;margin-right:10px}
+.coord{position:absolute;right:10px;bottom:10px;background:rgba(255,253,249,.94);border:1px solid var(--line);border-radius:6px;padding:3px 8px;font-size:12px;font-variant-numeric:tabular-nums}
+.qitem{padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;cursor:pointer;background:#fff}
+.qitem:hover,.qitem.sel{border-color:var(--accent);background:var(--accent-soft)}
+.qitem b{font-family:var(--serif);font-weight:600}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.gallery figure{margin:0;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.gallery img{width:100%;height:150px;object-fit:cover;display:block;cursor:zoom-in;background:#eee}
+.gallery figcaption{padding:6px 8px;font-size:12px}
+.empty{color:var(--muted);font-style:italic;font-size:14px}
+/* modal */
+.modalbg{position:fixed;inset:0;background:rgba(40,32,24,.45);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:100;overflow:auto}
+.modal{background:var(--panel);border-radius:12px;max-width:720px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal.wide{max-width:1000px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+.form .full{grid-column:1/-1}
+@media(max-width:600px){.form{grid-template-columns:1fr}}
+.form label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:3px}
+.form input,.form select,.form textarea{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:14px;background:#fff}
+.form textarea{min-height:78px;resize:vertical}
+.form .help{font-size:12px;color:var(--muted);margin-top:2px}
+.err{color:var(--bad);font-size:13px;margin-top:8px}
+textarea.code{width:100%;min-height:320px;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;border:1px solid var(--line);border-radius:8px;padding:10px}
+.lightbox img{max-width:100%;max-height:75vh;display:block;margin:0 auto}
+.strat{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.strat svg{flex:0 0 auto}
+.strat .tablewrap{flex:1;min-width:300px}
+footer{max-width:1280px;margin:0 auto;padding:10px 20px 40px;color:var(--muted);font-size:13px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+footer .sp{flex:1}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:8px;font-size:14px;z-index:200}
+.stat{display:flex;gap:26px;flex-wrap:wrap;margin:6px 0 4px}
+.stat div b{display:block;font:600 24px/1.1 var(--serif)}
+.stat div span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <div class="brand"><h1 id="siteTitle">Roman Quarries of Istria</h1><div class="sub" id="siteSub">Geological and petrographic database</div></div>
+    <nav id="nav">
+      <a href="#map" data-v="map">Map</a>
+      <a href="#quarries" data-v="quarries">Quarries</a>
+      <a href="#samples" data-v="samples">Samples</a>
+      <a href="#analyses" data-v="analyses">Analyses</a>
+      <a href="#about" data-v="about">About &amp; data</a>
+    </nav>
+  </div>
+</header>
+<main id="main"></main>
+<footer>
+  <span id="footCite"></span><span class="sp"></span>
+  <button class="btn sm" id="editToggle">Editor mode</button>
+</footer>
+<div id="modalRoot"></div>
+
+<script id="embedded-data" type="application/json">{"meta": {"title": "Roman Quarries of Istria — Geological and Petrographic Database", "short_title": "Roman Quarries of Istria", "authors": "Your Name", "institution": "", "version": "0.1-demo", "updated": "2026-11-08", "license": "CC BY 4.0", "license_url": "https://creativecommons.org/licenses/by/4.0/", "doi": "", "contact": "", "intro": "An open-access database of Roman-period quarries documented on the Istrian peninsula: locations, extraction traces and tool marks, geological layering, samples and petrographic analyses. THE RECORDS CURRENTLY SHOWN ARE DEMO EXAMPLES ONLY — replace them with real data in Editor mode.", "location_policy": "Exact coordinates of unprotected sites are generalised (about 1 km) or withheld to protect them from damage. Precise locations are available to researchers on request."}, "quarries": [{"id": "DEMO-01", "name": "Example quarry A (demo)", "toponym": "Example toponym", "municipality": "Municipality A", "lat": 45.1012, "lon": 13.7105, "precision": "exact", "status": "confirmed Roman", "type": "quarry face / front", "period": "1st–3rd c. AD", "dating_basis": "Demo text: describe how the dating was established (associated finds, extraction technique, relation to dated monuments).", "extraction": "Demo text: stepped extraction along bedding planes; blocks freed with separation trenches and wedges.", "lithology": "Bioclastic limestone", "formation": "Example formation", "age": "Late Cretaceous (Cenomanian)", "preservation": "moderate", "protection": "Not registered", "description": "DEMO RECORD. This entry shows how a quarry record looks. Replace it with your own documentation.", "documented_by": "Your Name", "last_visit": "2025-05-14", "bibliography": ["Author, A. (Year). Title of publication. Journal, vol(issue), pages."], "toolmarks": [{"id": "TM-1", "sector": "Front 1", "type": "separation trench", "tool": "Quarry pick", "dimensions": "W 8–10 cm, D 35 cm", "orientation": "N–S", "notes": "Diagonal pick strokes on trench walls."}, {"id": "TM-2", "sector": "Front 1", "type": "wedge holes", "tool": "Iron wedges", "dimensions": "L 9 cm, spacing 20–25 cm", "orientation": "E–W", "notes": "Row of 6 sockets at the base of an extracted block."}, {"id": "TM-3", "sector": "Front 2", "type": "extraction negative (block scar)", "tool": "", "dimensions": "1.2 × 0.6 × 0.5 m", "orientation": "", "notes": ""}], "strata": [{"id": "L-1", "bed": "1", "thickness_cm": 80, "lithology": "Limestone", "dunham": "packstone", "dip": "12", "strike": "140", "formation": "", "age": "", "notes": "Base of the exposed section."}, {"id": "L-2", "bed": "2", "thickness_cm": 45, "lithology": "Limestone", "dunham": "wackestone", "dip": "12", "strike": "140", "formation": "", "age": "", "notes": ""}, {"id": "L-3", "bed": "3", "thickness_cm": 120, "lithology": "Limestone", "dunham": "grainstone", "dip": "11", "strike": "138", "formation": "", "age": "", "notes": "Main exploited bed."}, {"id": "L-4", "bed": "4", "thickness_cm": 30, "lithology": "Limestone", "dunham": "mudstone", "dip": "11", "strike": "138", "formation": "", "age": "", "notes": "Thin-bedded, not exploited."}], "media": []}, {"id": "DEMO-02", "name": "Example quarry B (demo)", "toponym": "", "municipality": "Municipality B", "lat": 44.9283, "lon": 13.879, "precision": "approximate", "status": "probable Roman", "type": "open-cast pit", "period": "Roman (undetermined)", "dating_basis": "", "extraction": "", "lithology": "Micritic limestone", "formation": "", "age": "Late Cretaceous", "preservation": "poor", "protection": "", "description": "DEMO RECORD with a generalised (approximate) public location.", "documented_by": "Your Name", "last_visit": "2024-09-02", "bibliography": [], "toolmarks": [{"id": "TM-1", "sector": "", "type": "pick marks", "tool": "Quarry pick", "dimensions": "", "orientation": "", "notes": ""}], "strata": [{"id": "L-1", "bed": "1", "thickness_cm": 60, "lithology": "Limestone", "dunham": "mudstone", "dip": "", "strike": "", "formation": "", "age": "", "notes": ""}, {"id": "L-2", "bed": "2", "thickness_cm": 90, "lithology": "Limestone", "dunham": "wackestone", "dip": "", "strike": "", "formation": "", "age": "", "notes": ""}], "media": []}, {"id": "DEMO-03", "name": "Example quarry C (demo)", "toponym": "", "municipality": "Municipality A", "lat": 45.295, "lon": 13.702, "precision": "hidden", "status": "presumed", "type": "coastal quarry", "period": "", "dating_basis": "", "extraction": "", "lithology": "Rudist limestone", "formation": "", "age": "Late Cretaceous", "preservation": "unknown", "protection": "", "description": "DEMO RECORD whose location is hidden from the public map.", "documented_by": "Your Name", "last_visit": "", "bibliography": [], "toolmarks": [], "strata": [], "media": []}], "samples": [{"id": "S-001", "quarry_id": "DEMO-01", "bed": "3", "sector": "Front 1", "date": "2023-04-11", "collector": "Your Name", "storage": "Example collection, box 1", "description": "Fresh hand specimen from the exploited bed."}, {"id": "S-002", "quarry_id": "DEMO-01", "bed": "1", "sector": "Front 1", "date": "2023-04-11", "collector": "Your Name", "storage": "Example collection, box 1", "description": ""}, {"id": "S-003", "quarry_id": "DEMO-02", "bed": "2", "sector": "", "date": "2024-09-02", "collector": "Your Name", "storage": "", "description": ""}], "analyses": [{"id": "A-001", "sample_id": "S-001", "method": "thin section (optical microscopy)", "lab": "Example lab", "analyst": "", "date": "2023-06-01", "dunham": "grainstone", "folk": "biosparite", "microfacies": "Demo: bioclastic grainstone with benthic foraminifera", "fossils": "Benthic foraminifera, echinoderm fragments", "porosity": "", "results": "Demo result text.", "ref": ""}, {"id": "A-002", "sample_id": "S-001", "method": "stable isotopes (δ13C, δ18O)", "lab": "Example lab", "analyst": "", "date": "2023-09-15", "dunham": "", "folk": "", "microfacies": "", "fossils": "", "porosity": "", "results": "δ13C = 2.1 ‰ VPDB; δ18O = −2.4 ‰ VPDB (demo values)", "ref": ""}, {"id": "A-003", "sample_id": "S-003", "method": "thin section (optical microscopy)", "lab": "", "analyst": "", "date": "", "dunham": "wackestone", "folk": "biomicrite", "microfacies": "", "fossils": "Planktonic foraminifera", "porosity": "", "results": "", "ref": ""}]}</script>
+<script>
+"use strict";
+/* ============================== VOCABULARIES ============================== */
+const V = {
+  precision: ['exact','approximate','hidden'],
+  status: ['confirmed Roman','probable Roman','presumed','undetermined'],
+  qtype: ['quarry face / front','open-cast pit','coastal quarry','underground','outcrop / boulder exploitation','uncertain'],
+  preservation: ['good','moderate','poor','destroyed','unknown'],
+  toolmark: ['pick marks','punch marks','chisel marks','separation trench','wedge holes','lever sockets','extraction negative (block scar)','extraction steps / benches','unfinished / abandoned block','saw marks','drill holes (modern)','other'],
+  dunham: ['','mudstone','wackestone','packstone','grainstone','boundstone','floatstone','rudstone','crystalline carbonate'],
+  method: ['thin section (optical microscopy)','cathodoluminescence','SEM-EDS','XRD','XRF','ICP-MS / ICP-OES','stable isotopes (δ13C, δ18O)','Sr isotopes','porosimetry','physical-mechanical tests','micropaleontology','other'],
+  media: ['photo','photomicrograph','drawing','plan / section','3D model / orthophoto','other']
+};
+/* field: [key,label,type,opts]  types: text,textarea,number,select,lines,date */
+const F = {
+  quarry: [
+    ['id','Quarry ID','text',{req:1,help:'Short unique code, e.g. KAN-01'}],
+    ['name','Name','text',{req:1}],
+    ['toponym','Toponym / local name','text'],
+    ['municipality','Municipality','text'],
+    ['lat','Latitude (WGS84, decimal °)','number',{step:'any',help:'e.g. 45.1012'}],
+    ['lon','Longitude (WGS84, decimal °)','number',{step:'any',help:'e.g. 13.7105'}],
+    ['precision','Public location display','select',{list:'precision',help:'exact / approximate (~1 km) / hidden from public'}],
+    ['status','Identification','select',{list:'status'}],
+    ['type','Quarry type','select',{list:'qtype'}],
+    ['period','Period of use','text'],
+    ['preservation','State of preservation','select',{list:'preservation'}],
+    ['protection','Legal protection / register no.','text'],
+    ['lithology','Main lithology','text'],
+    ['formation','Formation / unit','text'],
+    ['age','Geological age','text'],
+    ['documented_by','Documented by','text'],
+    ['last_visit','Last field visit','date'],
+    ['dating_basis','Dating basis','textarea',{full:1}],
+    ['extraction','Extraction technique','textarea',{full:1}],
+    ['description','Description','textarea',{full:1}],
+    ['bibliography','Bibliography (one reference per line)','lines',{full:1}]
+  ],
+  toolmark: [
+    ['sector','Sector / front','text'],
+    ['type','Type','select',{list:'toolmark'}],
+    ['tool','Tool (interpreted)','text'],
+    ['dimensions','Dimensions','text'],
+    ['orientation','Orientation','text'],
+    ['notes','Notes','textarea',{full:1}]
+  ],
+  stratum: [
+    ['bed','Bed no.','text',{help:'List beds from bottom to top'}],
+    ['thickness_cm','Thickness (cm)','number'],
+    ['lithology','Lithology','text'],
+    ['dunham','Texture (Dunham)','select',{list:'dunham'}],
+    ['dip','Dip (°)','text'],
+    ['strike','Strike / dip direction (°)','text'],
+    ['formation','Formation','text'],
+    ['age','Age','text'],
+    ['notes','Notes','textarea',{full:1}]
+  ],
+  sample: [
+    ['id','Sample ID','text',{req:1}],
+    ['quarry_id','Quarry','select',{dyn:'quarries',req:1}],
+    ['bed','Bed','text'],
+    ['sector','Sector / front','text'],
+    ['date','Collection date','date'],
+    ['collector','Collector','text'],
+    ['storage','Storage / repository','text'],
+    ['description','Description','textarea',{full:1}]
+  ],
+  analysis: [
+    ['id','Analysis ID','text',{req:1}],
+    ['sample_id','Sample','select',{dyn:'samples',req:1}],
+    ['method','Method','select',{list:'method'}],
+    ['lab','Laboratory','text'],
+    ['analyst','Analyst','text'],
+    ['date','Date','date'],
+    ['dunham','Texture (Dunham)','select',{list:'dunham'}],
+    ['folk','Folk classification','text'],
+    ['microfacies','Microfacies','text',{full:1}],
+    ['fossils','Fossil content','text',{full:1}],
+    ['porosity','Porosity','text'],
+    ['ref','File / DOI / reference','text'],
+    ['results','Results','textarea',{full:1}]
+  ],
+  media: [
+    ['kind','Kind','select',{list:'media'}],
+    ['caption','Caption','text',{full:1}],
+    ['credit','Author / credit','text'],
+    ['license','Licence','text'],
+    ['src','Image file path (if self-hosted, e.g. media/kan01-1.jpg)','text',{full:1,help:'Or upload an image below — it will be embedded in the data file.'}]
+  ],
+  meta: [
+    ['title','Database title','text',{full:1}],
+    ['short_title','Short title (header)','text'],
+    ['authors','Authors','text'],
+    ['institution','Institution / project','text'],
+    ['version','Version','text'],
+    ['updated','Last updated','date'],
+    ['doi','DOI (e.g. from Zenodo)','text'],
+    ['license','Licence','text'],
+    ['license_url','Licence URL','text'],
+    ['contact','Contact (shown as text)','text'],
+    ['intro','Introduction','textarea',{full:1}],
+    ['location_policy','Location policy','textarea',{full:1}]
+  ]
+};
+
+/* ============================== STATE ============================== */
+const LS_KEY='istria-quarrydb-draft-v1', LS_EDIT='istria-quarrydb-editor';
+let DB=null, editor=false, hasDraft=false, source='embedded';
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v);return true}catch(e){return false}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+
+function normalize(d){
+  d=d||{}; d.meta=d.meta||{}; d.quarries=d.quarries||[]; d.samples=d.samples||[]; d.analyses=d.analyses||[];
+  d.quarries.forEach(q=>{q.toolmarks=q.toolmarks||[];q.strata=q.strata||[];q.media=q.media||[];
+    if(!Array.isArray(q.bibliography)) q.bibliography=q.bibliography?String(q.bibliography).split(/\n/).filter(Boolean):[];
+    if(q.lat!==''&&q.lat!=null) q.lat=Number(q.lat); if(q.lon!==''&&q.lon!=null) q.lon=Number(q.lon);
+    if(!q.precision) q.precision='approximate';});
+  return d;
+}
+async function load(){
+  let base=null;
+  try{const r=await fetch('data.json',{cache:'no-store'}); if(r.ok){base=await r.json();source='data.json';}}catch(e){}
+  if(!base){try{base=JSON.parse(document.getElementById('embedded-data').textContent);source='embedded';}catch(e){base={};}}
+  const draft=ls.get(LS_KEY);
+  if(draft){try{DB=normalize(JSON.parse(draft));hasDraft=true;}catch(e){DB=normalize(base);}}
+  else DB=normalize(base);
+  editor=ls.get(LS_EDIT)==='1';
+  route();
+}
+function save(){
+  hasDraft=true;
+  if(!ls.set(LS_KEY,JSON.stringify(DB))) toast('Changes kept for this session only — export the data to keep them.');
+  route();
+}
+
+/* ============================== HELPERS ============================== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const slug=s=>String(s).replace(/[^A-Za-z0-9-]/g,'-');
+const qById=id=>DB.quarries.find(q=>q.id===id);
+const sById=id=>DB.samples.find(s=>s.id===id);
+const samplesOf=qid=>DB.samples.filter(s=>s.quarry_id===qid);
+const analysesOf=sid=>DB.analyses.filter(a=>a.sample_id===sid);
+const analysesOfQ=qid=>{const ids=new Set(samplesOf(qid).map(s=>s.id));return DB.analyses.filter(a=>ids.has(a.sample_id));};
+const nextId=(arr,prefix)=>{let n=arr.length+1;while(arr.some(x=>x.id===prefix+n))n++;return prefix+n;};
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600);}
+function statusPill(s){const c={'confirmed Roman':'g','probable Roman':'y','presumed':'n','undetermined':'n'}[s]||'n';return s?`<span class="pill ${c}">${esc(s)}</span>`:'';}
+function precPill(p){const c={exact:'g',approximate:'y',hidden:'r'}[p]||'n';return `<span class="pill ${c}">${esc(p||'—')}</span>`;}
+/* public coordinates */
+function pubCoord(q){
+  if(q.lat==null||q.lon==null||isNaN(q.lat)||isNaN(q.lon)||q.lat===''||q.lon==='') return null;
+  if(editor) return {lat:q.lat,lon:q.lon,approx:q.precision==='approximate',hidden:q.precision==='hidden'};
+  if(q.precision==='hidden') return null;
+  if(q.precision==='approximate') return {lat:Math.round(q.lat*100)/100,lon:Math.round(q.lon*100)/100,approx:true};
+  return {lat:q.lat,lon:q.lon};
+}
+function coordText(q){
+  const c=pubCoord(q);
+  if(!c) return q.precision==='hidden'?'Withheld (available on request)':'—';
+  const f=c.approx&&!editor?2:5;
+  return `${c.lat.toFixed(f)}° N, ${c.lon.toFixed(f)}° E${c.approx&&!editor?' (generalised ≈1 km)':''}${editor&&q.precision!=='exact'?' · public: '+q.precision:''}`;
+}
+
+/* ============================== MAP ============================== */
+const ISTRIA=[[13.50,45.50],[13.53,45.43],[13.55,45.36],[13.57,45.31],[13.59,45.23],[13.60,45.16],[13.62,45.135],[13.63,45.10],[13.63,45.07],[13.67,45.02],[13.73,44.97],[13.79,44.93],[13.82,44.88],[13.85,44.86],[13.89,44.80],[13.91,44.77],[13.94,44.80],[13.98,44.82],[14.00,44.86],[14.03,44.90],[14.06,44.94],[14.07,45.02],[14.10,44.98],[14.13,45.04],[14.16,45.08],[14.19,45.13],[14.24,45.15],[14.27,45.22],[14.30,45.30],[14.31,45.34],[14.37,45.35],[14.44,45.34],[14.48,45.42],[14.40,45.48],[14.20,45.52],[14.00,45.50],[13.90,45.47],[13.75,45.48],[13.62,45.47],[13.50,45.50]];
+const TOWNS=[['Pula',44.866,13.850],['Poreč',45.227,13.594],['Rovinj',45.081,13.639],['Umag',45.434,13.520],['Labin',45.095,14.120],['Pazin',45.240,13.937],['Buzet',45.408,13.967],['Novigrad',45.317,13.562]];
+const K=1000, COS=Math.cos(45.15*Math.PI/180), LON0=13.35, LAT0=45.62;
+const px=lon=>(lon-LON0)*K*COS, py=lat=>(LAT0-lat)*K;
+const inv=(x,y)=>({lon:x/(K*COS)+LON0,lat:LAT0-y/K});
+const VB0={x:0,y:0,w:820,h:900};
+
+function mapSVG(quarries,opts){
+  opts=opts||{};
+  const pts=ISTRIA.map(([lo,la])=>px(lo).toFixed(1)+','+py(la).toFixed(1)).join(' ');
+  let grat='';
+  for(let lo=13.4;lo<=14.6;lo+=0.2){grat+=`<line x1="${px(lo)}" y1="-200" x2="${px(lo)}" y2="1200" class="g"/>`;}
+  for(let la=44.6;la<=45.8;la+=0.1){grat+=`<line x1="-200" y1="${py(la)}" x2="1200" y2="${py(la)}" class="g"/>`;}
+  return `<svg viewBox="0 0 820 900" preserveAspectRatio="xMidYMid meet">
+  <style>.g{stroke:#c7d6dd;stroke-width:.6;vector-effect:non-scaling-stroke}.town circle{fill:#8c8479}.town text{font-family:Inter,sans-serif;fill:#7b7266;paint-order:stroke;stroke:#efe8dc}
+  .mk{cursor:pointer}.mk:hover .dot{stroke:#2b2722}</style>
+  <g class="grat">${grat}</g>
+  <polygon points="${pts}" fill="var(--land)" stroke="var(--land-line)" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+  <g class="towns"></g>
+  <g class="markers"></g></svg>`;
+}
+function initMap(box,quarries,opts){
+  opts=opts||{};
+  box.innerHTML=mapSVG()+`<div class="mapctl"><button data-z="in" title="Zoom in">+</button><button data-z="out" title="Zoom out">−</button><button data-z="fit" title="Reset view">⤢</button></div>
+  <div class="maplegend"><span><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="#8a5a2b"/></svg>exact</span><span><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="#c9a26b" fill-opacity=".5" stroke="#a0702a" stroke-dasharray="2 2"/></svg>generalised ≈1 km</span>${editor?'<span><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="#fff" stroke="#9b3b30" stroke-width="2"/></svg>hidden (editor only)</span>':''}<br><span class="muted">Outline approximate · not for navigation</span></div>
+  <div class="coord" style="display:none"></div>`;
+  const svg=box.querySelector('svg'), mg=svg.querySelector('.markers'), tg=svg.querySelector('.towns'), coordEl=box.querySelector('.coord');
+  let vb={...VB0};
+  if(opts.focus){const w=180,h=200;vb={x:px(opts.focus.lon)-w/2,y:py(opts.focus.lat)-h/2,w,h};}
+  const apply=()=>{svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`);draw();};
+  const scale=()=>{const r=svg.getBoundingClientRect();return Math.max(vb.w/(r.width||820),vb.h/(r.height||900));};
+  function draw(){
+    const s=scale();let h='';
+    tg.innerHTML=TOWNS.map(([n,la,lo])=>`<g class="town"><circle cx="${px(lo)}" cy="${py(la)}" r="${2.5*s}"/><text x="${px(lo)+5*s}" y="${py(la)+4*s}" font-size="${11*s}" stroke-width="${3*s}">${n}</text></g>`).join('');
+    quarries.forEach(q=>{const c=pubCoord(q);if(!c)return;const x=px(c.lon),y=py(c.lat);const sel=opts.selected===q.id;
+      if(c.hidden){h+=`<g class="mk" data-id="${esc(q.id)}"><circle class="dot" cx="${x}" cy="${y}" r="${6*s}" fill="#fff" stroke="#9b3b30" stroke-width="${2*s}"/></g>`;}
+      else if(c.approx&&!editor){h+=`<g class="mk" data-id="${esc(q.id)}"><circle cx="${x}" cy="${y}" r="${Math.max(9*s,1000/111*K/1000*0.9)}" fill="#c9a26b" fill-opacity=".35" stroke="#a0702a" stroke-width="${1.2*s}" stroke-dasharray="${3*s} ${3*s}"/><circle class="dot" cx="${x}" cy="${y}" r="${3*s}" fill="#a0702a"/></g>`;}
+      else {h+=`<g class="mk" data-id="${esc(q.id)}"><circle class="dot" cx="${x}" cy="${y}" r="${(sel?8:6)*s}" fill="${c.approx?'#c9a26b':'#8a5a2b'}" stroke="#fff" stroke-width="${1.5*s}"/></g>`;}
+      if(sel||opts.labels){h+=`<text x="${x+9*s}" y="${y+4*s}" style="font:600 ${12*s}px Inter,sans-serif;fill:#2b2722;paint-order:stroke;stroke:#fffdf9;stroke-width:${3*s}px">${esc(q.name)}</text>`;}
+    });
+    mg.innerHTML=h;
+  }
+  function zoom(f,cx,cy){const nw=Math.min(Math.max(vb.w*f,20),1600),k=nw/vb.w;if(cx==null){cx=vb.x+vb.w/2;cy=vb.y+vb.h/2;}vb={x:cx-(cx-vb.x)*k,y:cy-(cy-vb.y)*k,w:nw,h:vb.h*k};apply();}
+  function toSvg(e){const r=svg.getBoundingClientRect(),s=scale();const ox=(r.width*s-vb.w)/2,oy=(r.height*s-vb.h)/2;return {x:vb.x-ox+(e.clientX-r.left)*s,y:vb.y-oy+(e.clientY-r.top)*s};}
+  box.querySelector('.mapctl').onclick=e=>{const z=e.target.dataset.z;if(z==='in')zoom(.6);if(z==='out')zoom(1/.6);if(z==='fit'){vb={...VB0};apply();}};
+  svg.addEventListener('wheel',e=>{e.preventDefault();const p=toSvg(e);zoom(e.deltaY<0?.8:1.25,p.x,p.y);},{passive:false});
+  let drag=null,moved=false;
+  svg.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,vb:{...vb}};moved=false;svg.setPointerCapture(e.pointerId);svg.classList.add('drag');});
+  svg.addEventListener('pointermove',e=>{
+    if(editor){const p=toSvg(e),g=inv(p.x,p.y);coordEl.style.display='';coordEl.textContent=`${g.lat.toFixed(5)}° N, ${g.lon.toFixed(5)}° E`;}
+    if(!drag)return;const s=scale(),dx=(e.clientX-drag.x)*s,dy=(e.clientY-drag.y)*s;if(Math.abs(dx)+Math.abs(dy)>3*s)moved=true;vb={...drag.vb,x:drag.vb.x-dx,y:drag.vb.y-dy};svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`);});
+  const end=e=>{if(!drag)return;svg.classList.remove('drag');const wasMoved=moved;drag=null;
+    if(!wasMoved){const t=document.elementFromPoint(e.clientX,e.clientY);const mk=t&&t.closest&&t.closest('.mk');if(mk&&opts.onPick)opts.onPick(mk.dataset.id);}};
+  svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',()=>{drag=null;svg.classList.remove('drag');});
+  apply();
+  new ResizeObserver(()=>draw()).observe(box);
+  return {setSelected(id){opts.selected=id;draw();},focus(q){const c=pubCoord(q);if(!c)return;vb={x:px(c.lon)-vb.w/2,y:py(c.lat)-vb.h/2,w:vb.w,h:vb.h};apply();}};
+}
+
+/* ============================== FILTERS ============================== */
+const filt={q:'',muni:'',tm:'',dun:'',status:'',hasA:false};
+function filteredQuarries(){
+  const t=filt.q.trim().toLowerCase();
+  return DB.quarries.filter(q=>{
+    if(filt.muni&&q.municipality!==filt.muni)return false;
+    if(filt.status&&q.status!==filt.status)return false;
+    if(filt.tm&&!q.toolmarks.some(m=>m.type===filt.tm))return false;
+    if(filt.dun&&!q.strata.some(s=>s.dunham===filt.dun)&&!analysesOfQ(q.id).some(a=>a.dunham===filt.dun))return false;
+    if(filt.hasA&&!analysesOfQ(q.id).length)return false;
+    if(t){const hay=[q.id,q.name,q.toponym,q.municipality,q.lithology,q.formation,q.age,q.description,q.period].join(' ').toLowerCase();if(!hay.includes(t))return false;}
+    return true;});
+}
+function uniq(a){return [...new Set(a.filter(Boolean))].sort((x,y)=>x.localeCompare(y));}
+function filterBar(){
+  const opt=(list,val,all)=>`<option value="">${all}</option>`+list.map(v=>`<option${v===val?' selected':''}>${esc(v)}</option>`).join('');
+  return `<div class="filters">
+   <input type="search" id="fq" placeholder="Search name, toponym, lithology, age…" value="${esc(filt.q)}">
+   <select id="fm">${opt(uniq(DB.quarries.map(q=>q.municipality)),filt.muni,'All municipalities')}</select>
+   <select id="fs">${opt(V.status,filt.status,'Any identification')}</select>
+   <select id="ft">${opt(V.toolmark,filt.tm,'Any tool mark')}</select>
+   <select id="fd">${opt(V.dunham.filter(Boolean),filt.dun,'Any texture')}</select>
+   <label class="row small"><input type="checkbox" id="fa"${filt.hasA?' checked':''}> with analyses</label>
+  </div>`;
+}
+function bindFilters(onChange){
+  const b=(id,k,ev,get)=>{const el=$(id);if(el)el.addEventListener(ev,()=>{filt[k]=get(el);onChange();});};
+  b('#fq','q','input',e=>e.value);b('#fm','muni','change',e=>e.value);b('#fs','status','change',e=>e.value);
+  b('#ft','tm','change',e=>e.value);b('#fd','dun','change',e=>e.value);b('#fa','hasA','change',e=>e.checked);
+}
+
+/* ============================== VIEWS ============================== */
+function banners(){
+  let h='';
+  if(editor) h+=`<div class="banner edit"><b>Editor mode.</b><span>Changes are saved in this browser. To publish them, export <code>data.json</code> and upload it to your site.</span><span class="sp"></span><button class="btn sm pri" data-act="export-json">Export data.json</button></div>`;
+  if(hasDraft) h+=`<div class="banner"><span>This browser holds <b>local changes</b> that are not in the published data file.</span><span class="sp"></span>${editor?'':'<button class="btn sm" data-act="editor-on">Open editor</button>'}<button class="btn sm danger" data-act="discard">Discard local changes</button></div>`;
+  return h;
+}
+function viewMap(){
+  const list=filteredQuarries();
+  $('#main').innerHTML=banners()+`<div class="grid2"><div><div class="mapbox" id="mapbox"></div></div>
+   <div class="card"><div class="sechead"><h3>${list.length} quarr${list.length===1?'y':'ies'}</h3>${editor?'<button class="btn sm pri" data-act="add-quarry">+ Quarry</button>':''}</div>
+   ${filterBar()}<div id="qlist"></div></div></div>`;
+  const m=initMap($('#mapbox'),list,{onPick:id=>{sel(id);}});
+  function sel(id){m.setSelected(id);document.querySelectorAll('.qitem').forEach(e=>e.classList.toggle('sel',e.dataset.id===id));const el=document.querySelector(`.qitem[data-id="${CSS.escape(id)}"]`);if(el)el.scrollIntoView({block:'nearest'});}
+  const ql=$('#qlist');
+  ql.innerHTML=list.map(q=>{const nS=samplesOf(q.id).length,nA=analysesOfQ(q.id).length;return `<div class="qitem" data-id="${esc(q.id)}"><div class="row"><b>${esc(q.name)}</b><span class="sp" style="flex:1"></span>${statusPill(q.status)}</div>
+   <div class="small muted">${esc(q.id)} · ${esc(q.municipality||'—')} · ${esc(q.lithology||'')}</div>
+   <div class="small muted">${q.toolmarks.length} tool marks · ${q.strata.length} beds · ${nS} samples · ${nA} analyses ${pubCoord(q)?'':'· <i>location withheld</i>'}</div>
+   <div class="row" style="margin-top:6px"><a class="btn sm" href="#q-${slug(q.id)}">Open record</a>${pubCoord(q)?`<button class="btn sm" data-focus="${esc(q.id)}">Show on map</button>`:''}</div></div>`;}).join('')||'<p class="empty">No quarries match the filters.</p>';
+  ql.onclick=e=>{const f=e.target.closest('[data-focus]');if(f){const q=qById(f.dataset.focus);m.focus(q);sel(q.id);return;}const it=e.target.closest('.qitem');if(it&&!e.target.closest('a'))sel(it.dataset.id);};
+  bindFilters(()=>{const p=$('#fq')&&$('#fq').selectionStart;viewMap();const fq=$('#fq');if(fq&&document.activeElement!==fq&&filt.q){fq.focus();try{fq.setSelectionRange(p,p);}catch(e){}}});
+}
+function viewQuarries(){
+  const list=filteredQuarries();
+  $('#main').innerHTML=banners()+`<div class="card"><div class="sechead"><h2 style="margin:0;flex:1">Quarries</h2>${editor?'<button class="btn pri sm" data-act="add-quarry">+ Add quarry</button>':''}</div>
+  ${filterBar()}<div class="tablewrap"><table><thead><tr><th>ID</th><th>Name</th><th>Municipality</th><th>Identification</th><th>Lithology / age</th><th>Tool marks</th><th>Samples</th><th>Analyses</th>${editor?'<th>Public location</th>':''}</tr></thead><tbody>
+  ${list.map(q=>`<tr class="click" data-href="#q-${slug(q.id)}"><td>${esc(q.id)}</td><td><b>${esc(q.name)}</b><div class="small muted">${esc(q.toponym||'')}</div></td><td>${esc(q.municipality||'')}</td><td>${statusPill(q.status)}</td><td>${esc(q.lithology||'')}<div class="small muted">${esc(q.age||'')}</div></td><td>${q.toolmarks.length}</td><td>${samplesOf(q.id).length}</td><td>${analysesOfQ(q.id).length}</td>${editor?`<td>${precPill(q.precision)}</td>`:''}</tr>`).join('')||`<tr><td colspan="9" class="empty">No quarries match the filters.</td></tr>`}
+  </tbody></table></div></div>`;
+  bindFilters(()=>{viewQuarries();const fq=$('#fq');if(fq&&filt.q){fq.focus();fq.setSelectionRange(fq.value.length,fq.value.length);}});
+}
+function stratColumn(strata){
+  if(!strata.length) return '';
+  const W={'':40,mudstone:30,wackestone:42,packstone:54,grainstone:66,boundstone:74,floatstone:70,rudstone:78,'crystalline carbonate':50};
+  const tot=strata.reduce((s,b)=>s+(Number(b.thickness_cm)||20),0);const H=Math.min(Math.max(tot*1.1,160),520),k=H/tot;
+  let y=H+10,h='';
+  strata.forEach((b,i)=>{const t=(Number(b.thickness_cm)||20)*k;y-=t;const w=W[b.dunham||'']||40;
+    h+=`<rect x="40" y="${y}" width="${w}" height="${t}" fill="url(#lst)" stroke="#6f5b44" stroke-width="1"/><text x="34" y="${y+t/2+4}" text-anchor="end" font-size="11" fill="#6f675d">${esc(b.bed||i+1)}</text>`;});
+  const ticks=['M','W','P','G','B'].map((l,i)=>`<text x="${40+[30,42,54,66,78][i]}" y="${H+26}" font-size="9" text-anchor="middle" fill="#6f675d">${l}</text>`).join('');
+  return `<svg width="140" height="${H+34}" viewBox="0 0 140 ${H+34}"><defs><pattern id="lst" width="16" height="8" patternUnits="userSpaceOnUse"><rect width="16" height="8" fill="#e9dfcd"/><path d="M0 0H16M0 4H16M4 0V4M12 4V8" stroke="#b6a587" stroke-width=".7"/></pattern></defs>${h}<line x1="40" y1="${H+12}" x2="122" y2="${H+12}" stroke="#6f675d"/>${ticks}<text x="40" y="8" font-size="9" fill="#6f675d">${Math.round(tot)} cm total</text></svg>`;
+}
+function viewQuarry(id){
+  const q=DB.quarries.find(x=>slug(x.id)===id);
+  if(!q){$('#main').innerHTML=banners()+'<div class="card"><p>Record not found. <a href="#quarries">Back to quarries</a></p></div>';return;}
+  const E=editor, S=samplesOf(q.id);
+  const kv=(l,v)=>v?`<div><dt>${l}</dt><dd>${esc(v)}</dd></div>`:'';
+  const c=pubCoord(q);
+  $('#main').innerHTML=banners()+`
+  <div class="row small" style="margin-bottom:10px"><a href="#quarries">← All quarries</a></div>
+  <div class="card">
+   <div class="sechead"><div style="flex:1"><h2 style="margin:0">${esc(q.name)}</h2><div class="muted small">${esc(q.id)}${q.toponym?' · '+esc(q.toponym):''}${q.municipality?' · '+esc(q.municipality):''}</div></div>${statusPill(q.status)}
+   ${E?`<button class="btn sm" data-act="edit-quarry">Edit</button><button class="btn sm danger" data-act="del-quarry">Delete</button>`:''}</div>
+   <div class="grid2" style="margin-top:8px">
+    <div><dl class="kv">
+     ${kv('Location',coordText(q))}${kv('Quarry type',q.type)}${kv('Period of use',q.period)}${kv('Preservation',q.preservation)}
+     ${kv('Main lithology',q.lithology)}${kv('Formation',q.formation)}${kv('Geological age',q.age)}${kv('Legal protection',q.protection)}
+     ${kv('Documented by',q.documented_by)}${kv('Last field visit',q.last_visit)}</dl>
+     ${q.description?`<div class="section"><h3>Description</h3><p style="white-space:pre-wrap;margin:0">${esc(q.description)}</p></div>`:''}
+     ${q.extraction?`<div class="section"><h3>Extraction technique</h3><p style="white-space:pre-wrap;margin:0">${esc(q.extraction)}</p></div>`:''}
+     ${q.dating_basis?`<div class="section"><h3>Dating basis</h3><p style="white-space:pre-wrap;margin:0">${esc(q.dating_basis)}</p></div>`:''}
+    </div>
+    <div>${c?'<div class="mapbox mini" id="minimap"></div>':`<div class="card empty" style="background:var(--bg)">${q.precision==='hidden'?esc(DB.meta.location_policy||'Location withheld.'):'No coordinates recorded.'}</div>`}</div>
+   </div>
+  </div>
+
+  <div class="card section"><div class="sechead"><h3>Tool marks &amp; extraction traces <span class="muted small">(${q.toolmarks.length})</span></h3>${E?'<button class="btn sm pri" data-act="add-toolmark">+ Add</button>':''}</div>
+   ${q.toolmarks.length?`<div class="tablewrap"><table><thead><tr><th>Sector</th><th>Type</th><th>Tool</th><th>Dimensions</th><th>Orientation</th><th>Notes</th>${E?'<th></th>':''}</tr></thead><tbody>
+   ${q.toolmarks.map(m=>`<tr><td>${esc(m.sector)}</td><td><span class="pill">${esc(m.type)}</span></td><td>${esc(m.tool)}</td><td>${esc(m.dimensions)}</td><td>${esc(m.orientation)}</td><td>${esc(m.notes)}</td>${E?`<td class="row"><button class="btn sm" data-act="edit-toolmark" data-id="${esc(m.id)}">Edit</button><button class="btn sm danger" data-act="del-toolmark" data-id="${esc(m.id)}">×</button></td>`:''}</tr>`).join('')}
+   </tbody></table></div>`:'<p class="empty">No tool marks recorded.</p>'}</div>
+
+  <div class="card section"><div class="sechead"><h3>Geological layering <span class="muted small">(${q.strata.length} beds, bottom → top)</span></h3>${E?'<button class="btn sm pri" data-act="add-stratum">+ Add bed</button>':''}</div>
+   ${q.strata.length?`<div class="strat">${stratColumn(q.strata)}<div class="tablewrap"><table><thead><tr><th>Bed</th><th>Thickness</th><th>Lithology</th><th>Texture</th><th>Dip / strike</th><th>Notes</th>${E?'<th></th>':''}</tr></thead><tbody>
+   ${q.strata.slice().reverse().map(b=>`<tr><td>${esc(b.bed)}</td><td>${b.thickness_cm?esc(b.thickness_cm)+' cm':''}</td><td>${esc(b.lithology)}${b.formation?`<div class="small muted">${esc(b.formation)}</div>`:''}${b.age?`<div class="small muted">${esc(b.age)}</div>`:''}</td><td>${esc(b.dunham)}</td><td>${esc(b.dip?b.dip+'°':'')}${b.strike?' / '+esc(b.strike)+'°':''}</td><td>${esc(b.notes)}</td>${E?`<td class="row"><button class="btn sm" data-act="edit-stratum" data-id="${esc(b.id)}">Edit</button><button class="btn sm danger" data-act="del-stratum" data-id="${esc(b.id)}">×</button></td>`:''}</tr>`).join('')}
+   </tbody></table><p class="small muted">Column width shows Dunham texture: M mudstone · W wackestone · P packstone · G grainstone · B boundstone/rudstone.</p></div></div>`:'<p class="empty">No stratigraphic data recorded.</p>'}</div>
+
+  <div class="card section"><div class="sechead"><h3>Samples &amp; petrographic analyses <span class="muted small">(${S.length} samples, ${analysesOfQ(q.id).length} analyses)</span></h3>${E?'<button class="btn sm pri" data-act="add-sample">+ Sample</button>':''}</div>
+   ${S.length?S.map(s=>{const A=analysesOf(s.id);return `<div style="border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px;background:#fff">
+    <div class="row"><b>${esc(s.id)}</b><span class="small muted">${s.bed?'bed '+esc(s.bed):''}${s.sector?' · '+esc(s.sector):''}${s.date?' · '+esc(s.date):''}${s.collector?' · '+esc(s.collector):''}</span><span style="flex:1"></span>
+    ${E?`<button class="btn sm" data-act="add-analysis" data-id="${esc(s.id)}">+ Analysis</button><button class="btn sm" data-act="edit-sample" data-id="${esc(s.id)}">Edit</button><button class="btn sm danger" data-act="del-sample" data-id="${esc(s.id)}">×</button>`:''}</div>
+    ${s.description?`<div class="small" style="margin-top:4px">${esc(s.description)}</div>`:''}${s.storage?`<div class="small muted">Stored: ${esc(s.storage)}</div>`:''}
+    ${A.length?`<div class="tablewrap" style="margin-top:8px"><table><thead><tr><th>ID</th><th>Method</th><th>Texture / Folk</th><th>Microfacies &amp; fossils</th><th>Results</th><th>Lab / date</th>${E?'<th></th>':''}</tr></thead><tbody>
+    ${A.map(a=>`<tr><td>${esc(a.id)}</td><td>${esc(a.method)}</td><td>${esc(a.dunham)}${a.folk?`<div class="small muted">${esc(a.folk)}</div>`:''}</td><td>${esc(a.microfacies)}${a.fossils?`<div class="small muted">${esc(a.fossils)}</div>`:''}</td><td style="white-space:pre-wrap">${esc(a.results)}${a.ref?`<div class="small muted">${esc(a.ref)}</div>`:''}</td><td class="small">${esc(a.lab)}<div class="muted">${esc(a.date)}</div></td>${E?`<td class="row"><button class="btn sm" data-act="edit-analysis" data-id="${esc(a.id)}">Edit</button><button class="btn sm danger" data-act="del-analysis" data-id="${esc(a.id)}">×</button></td>`:''}</tr>`).join('')}</tbody></table></div>`:'<div class="small empty" style="margin-top:6px">No analyses yet.</div>'}
+   </div>`;}).join(''):'<p class="empty">No samples recorded.</p>'}</div>
+
+  <div class="card section"><div class="sechead"><h3>Photos, photomicrographs &amp; drawings <span class="muted small">(${q.media.length})</span></h3>${E?'<button class="btn sm pri" data-act="add-media">+ Add</button>':''}</div>
+   ${q.media.length?`<div class="gallery">${q.media.map((m,i)=>`<figure>${m.src?`<img src="${esc(m.src)}" alt="${esc(m.caption)}" data-light="${i}" loading="lazy">`:'<div style="height:150px;display:flex;align-items:center;justify-content:center" class="muted small">no image</div>'}<figcaption><b>${esc(m.kind||'')}</b> ${esc(m.caption)}<div class="muted">${esc(m.credit)}${m.license?' · '+esc(m.license):''}</div>${E?`<div class="row" style="margin-top:4px"><button class="btn sm" data-act="edit-media" data-id="${esc(m.id)}">Edit</button><button class="btn sm danger" data-act="del-media" data-id="${esc(m.id)}">×</button></div>`:''}</figcaption></figure>`).join('')}</div>`:'<p class="empty">No media yet.</p>'}</div>
+
+  ${q.bibliography.length?`<div class="card section"><h3>Bibliography</h3><ul style="margin:0;padding-left:20px">${q.bibliography.map(b=>`<li>${esc(b)}</li>`).join('')}</ul></div>`:''}
+  <div class="card section small"><b>How to cite this record:</b> ${esc(citeRecord(q))}</div>`;
+  if(c) initMap($('#minimap'),[q],{focus:c,selected:q.id});
+  document.querySelectorAll('[data-light]').forEach(img=>img.onclick=()=>{const m=q.media[+img.dataset.light];modal(`<div class="lightbox"><img src="${esc(m.src)}" alt=""><p class="small">${esc(m.caption)} <span class="muted">${esc(m.credit)}</span></p><div class="row" style="justify-content:flex-end"><button class="btn" data-close>Close</button></div></div>`,'wide');});
+  window.__q=q;
+}
+function citeRecord(q){const m=DB.meta;return `${m.authors||'[Authors]'} (${(m.updated||'').slice(0,4)||'[year]'}). ${q.name} [${q.id}]. In: ${m.title||'Database'}, version ${m.version||'—'}.${m.doi?' https://doi.org/'+m.doi.replace(/^https?:\/\/doi.org\//,''):''}`;}
+function viewSamples(){
+  const t=(filt.sq||'').toLowerCase();
+  const list=DB.samples.filter(s=>!t||[s.id,s.quarry_id,(qById(s.quarry_id)||{}).name,s.bed,s.collector,s.storage,s.description].join(' ').toLowerCase().includes(t));
+  $('#main').innerHTML=banners()+`<div class="card"><div class="sechead"><h2 style="margin:0;flex:1">Samples <span class="muted small">(${list.length})</span></h2>${editor?'<button class="btn pri sm" data-act="add-sample">+ Add sample</button>':''}</div>
+  <div class="filters"><input type="search" id="sq" placeholder="Search samples…" value="${esc(filt.sq||'')}"></div>
+  <div class="tablewrap"><table><thead><tr><th>Sample</th><th>Quarry</th><th>Bed / sector</th><th>Collected</th><th>Storage</th><th>Analyses</th></tr></thead><tbody>
+  ${list.map(s=>{const q=qById(s.quarry_id);return `<tr class="click" data-href="#q-${slug(s.quarry_id)}"><td><b>${esc(s.id)}</b></td><td>${q?esc(q.name):'<span class="pill r">missing quarry '+esc(s.quarry_id)+'</span>'}</td><td>${esc(s.bed)}${s.sector?' · '+esc(s.sector):''}</td><td>${esc(s.date)}<div class="small muted">${esc(s.collector)}</div></td><td>${esc(s.storage)}</td><td>${analysesOf(s.id).map(a=>`<span class="pill">${esc(a.method.split(' (')[0])}</span>`).join(' ')}</td></tr>`;}).join('')||'<tr><td colspan="6" class="empty">No samples.</td></tr>'}
+  </tbody></table></div></div>`;
+  const sq=$('#sq');sq.addEventListener('input',()=>{filt.sq=sq.value;viewSamples();const n=$('#sq');n.focus();n.setSelectionRange(n.value.length,n.value.length);});
+}
+function viewAnalyses(){
+  const m=filt.am||'',t=(filt.aq||'').toLowerCase();
+  const list=DB.analyses.filter(a=>(!m||a.method===m)&&(!t||[a.id,a.sample_id,a.dunham,a.folk,a.microfacies,a.fossils,a.results,a.lab].join(' ').toLowerCase().includes(t)));
+  $('#main').innerHTML=banners()+`<div class="card"><div class="sechead"><h2 style="margin:0;flex:1">Petrographic analyses <span class="muted small">(${list.length})</span></h2></div>
+  <div class="filters"><input type="search" id="aq" placeholder="Search microfacies, fossils, results…" value="${esc(filt.aq||'')}"><select id="am"><option value="">All methods</option>${uniq(DB.analyses.map(a=>a.method)).map(v=>`<option${v===m?' selected':''}>${esc(v)}</option>`).join('')}</select></div>
+  <div class="tablewrap"><table><thead><tr><th>ID</th><th>Sample / quarry</th><th>Method</th><th>Texture</th><th>Microfacies &amp; fossils</th><th>Results</th></tr></thead><tbody>
+  ${list.map(a=>{const s=sById(a.sample_id),q=s&&qById(s.quarry_id);return `<tr class="click" data-href="${q?'#q-'+slug(q.id):''}"><td><b>${esc(a.id)}</b></td><td>${esc(a.sample_id)}<div class="small muted">${q?esc(q.name):''}</div></td><td>${esc(a.method)}</td><td>${esc(a.dunham)}${a.folk?`<div class="small muted">${esc(a.folk)}</div>`:''}</td><td>${esc(a.microfacies)}<div class="small muted">${esc(a.fossils)}</div></td><td style="white-space:pre-wrap">${esc(a.results)}</td></tr>`;}).join('')||'<tr><td colspan="6" class="empty">No analyses.</td></tr>'}
+  </tbody></table></div>${editor?'<p class="small muted">Add analyses from a quarry record, under the sample they belong to.</p>':''}</div>`;
+  const aq=$('#aq');aq.addEventListener('input',()=>{filt.aq=aq.value;viewAnalyses();const n=$('#aq');n.focus();n.setSelectionRange(n.value.length,n.value.length);});
+  $('#am').addEventListener('change',e=>{filt.am=e.target.value;viewAnalyses();});
+}
+function viewAbout(){
+  const m=DB.meta;const nT=DB.quarries.reduce((s,q)=>s+q.toolmarks.length,0);
+  $('#main').innerHTML=banners()+`<div class="grid2"><div class="card">
+   <div class="sechead"><h2 style="margin:0;flex:1">${esc(m.title||'About')}</h2>${editor?'<button class="btn sm" data-act="edit-meta">Edit</button>':''}</div>
+   <div class="stat"><div><b>${DB.quarries.length}</b><span>quarries</span></div><div><b>${nT}</b><span>tool-mark records</span></div><div><b>${DB.samples.length}</b><span>samples</span></div><div><b>${DB.analyses.length}</b><span>analyses</span></div></div>
+   <p style="white-space:pre-wrap">${esc(m.intro||'')}</p>
+   <h3>Location policy</h3><p style="white-space:pre-wrap">${esc(m.location_policy||'')}</p>
+   <h3>How to cite</h3><p>${esc(m.authors||'[Authors]')} (${esc((m.updated||'').slice(0,4)||'[year]')}). <i>${esc(m.title||'')}</i>, version ${esc(m.version||'')}.${m.doi?` <a href="https://doi.org/${esc(m.doi.replace(/^https?:\/\/doi.org\//,''))}">https://doi.org/${esc(m.doi.replace(/^https?:\/\/doi.org\//,''))}</a>`:''}</p>
+   <h3>Licence</h3><p>${m.license_url?`<a href="${esc(m.license_url)}">${esc(m.license)}</a>`:esc(m.license||'')} — you may reuse and adapt the data with attribution.</p>
+   ${m.institution?`<p class="muted">${esc(m.institution)}</p>`:''}${m.contact?`<p>Contact: ${esc(m.contact)}</p>`:''}
+   <p class="small muted">Version ${esc(m.version||'—')} · updated ${esc(m.updated||'—')} · data source: ${esc(source)}${hasDraft?' + local changes':''}</p>
+  </div>
+  <div class="card"><h3>Download the data</h3>
+   <p class="small muted">Open formats for reuse. Public downloads apply the location policy (generalised or withheld coordinates).</p>
+   <div class="row" style="flex-direction:column;align-items:stretch;gap:6px">
+    <button class="btn" data-act="dl" data-t="json-public">Full database — JSON</button>
+    <button class="btn" data-act="dl" data-t="csv-quarries">Quarries — CSV</button>
+    <button class="btn" data-act="dl" data-t="csv-toolmarks">Tool marks — CSV</button>
+    <button class="btn" data-act="dl" data-t="csv-strata">Stratigraphy — CSV</button>
+    <button class="btn" data-act="dl" data-t="csv-samples">Samples — CSV</button>
+    <button class="btn" data-act="dl" data-t="csv-analyses">Analyses — CSV</button>
+   </div>
+   ${editor?`<h3 style="margin-top:18px">Editor tools</h3><div class="row" style="flex-direction:column;align-items:stretch;gap:6px">
+    <button class="btn pri" data-act="export-json">Export full data.json (exact coordinates — for your site)</button>
+    <label class="btn" style="text-align:center">Import data.json<input type="file" accept=".json,application/json" id="impJson" hidden></label>
+    <label class="btn" style="text-align:center">Import CSV table (quarries, toolmarks, strata, samples or analyses)<input type="file" accept=".csv,text/csv" id="impCsv" hidden></label>
+    <p class="small muted" style="margin:4px 0 0">CSV import adds new rows and updates rows with matching IDs. The file name (or a <code>table</code> column) tells which table it is, e.g. <code>samples.csv</code>. Download a CSV above to get the right column headers.</p>
+   </div>`:''}
+  </div></div>`;
+  const ij=$('#impJson'),ic=$('#impCsv');
+  if(ij) ij.onchange=()=>readFile(ij.files[0],t=>{try{const d=normalize(JSON.parse(t));if(!d.quarries)throw 0;DB=d;save();toast('Imported '+DB.quarries.length+' quarries');}catch(e){toast('Could not read that JSON file');}});
+  if(ic) ic.onchange=()=>readFile(ic.files[0],t=>importCSV(t,ic.files[0].name));
+}
+
+/* ============================== EXPORT / IMPORT ============================== */
+function readFile(f,cb){if(!f)return;const r=new FileReader();r.onload=()=>cb(r.result);r.readAsText(f);}
+function publicCopy(){
+  const d=JSON.parse(JSON.stringify(DB));const was=editor;editor=false;
+  d.quarries.forEach(q=>{const c=pubCoord(q);q.lat=c?c.lat:null;q.lon=c?c.lon:null;});editor=was;return d;}
+function csv(rows,cols){const e=v=>{v=v==null?'':Array.isArray(v)?v.join(' | '):String(v);return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};return '﻿'+cols.join(',')+'\n'+rows.map(r=>cols.map(c=>e(r[c])).join(',')).join('\n');}
+const QCOLS=F.quarry.map(f=>f[0]);
+function tableCSV(t,pub){
+  const d=pub?publicCopy():DB;
+  if(t==='quarries') return csv(d.quarries,QCOLS);
+  if(t==='toolmarks') return csv(d.quarries.flatMap(q=>q.toolmarks.map(m=>({quarry_id:q.id,...m}))),['quarry_id','id',...F.toolmark.map(f=>f[0])]);
+  if(t==='strata') return csv(d.quarries.flatMap(q=>q.strata.map(m=>({quarry_id:q.id,...m}))),['quarry_id','id',...F.stratum.map(f=>f[0])]);
+  if(t==='samples') return csv(d.samples,F.sample.map(f=>f[0]));
+  if(t==='analyses') return csv(d.analyses,F.analysis.map(f=>f[0]));
+}
+function offerFile(name,text,mime){
+  let ok=false;
+  try{const b=new Blob([text],{type:mime});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);ok=true;}catch(e){}
+  const big=text.length>400000;
+  modal(`<h3>${esc(name)}</h3><p class="small muted">If the download didn't start (some previews block downloads), copy the content below and save it as <code>${esc(name)}</code>.</p>
+   <textarea class="code" readonly>${esc(big?text.slice(0,400000)+'\n… (truncated in preview — use the download, or Copy which copies everything)':text)}</textarea>
+   <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" data-copy>Copy all</button><button class="btn pri" data-close>Done</button></div>`,'wide');
+  $('#modalRoot [data-copy]').onclick=async()=>{try{await navigator.clipboard.writeText(text);toast('Copied');}catch(e){const ta=$('#modalRoot textarea');ta.select();toast('Press Ctrl/Cmd+C to copy');}};
+}
+function parseCSV(t){
+  t=t.replace(/^﻿/,'');const rows=[];let row=[],f='',q=false;
+  for(let i=0;i<t.length;i++){const c=t[i];
+    if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++;}else q=false;}else f+=c;}
+    else if(c==='"')q=true; else if(c===','){row.push(f);f='';} else if(c==='\n'||c==='\r'){if(c==='\r'&&t[i+1]==='\n')i++;row.push(f);rows.push(row);row=[];f='';} else f+=c;}
+  if(f!==''||row.length){row.push(f);rows.push(row);}
+  const h=(rows.shift()||[]).map(x=>x.trim());
+  return rows.filter(r=>r.some(x=>x!=='')).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]==null?'':r[i]])));
+}
+function importCSV(text,fname){
+  const rows=parseCSV(text);if(!rows.length){toast('CSV is empty');return;}
+  let t=(rows[0].table||fname.replace(/\.csv$/i,'').split(/[\\/]/).pop()).toLowerCase();
+  t=['quarries','toolmarks','strata','samples','analyses'].find(x=>t.includes(x)||t.includes(x.replace(/s$/,'')))||t;
+  let n=0;
+  const upsert=(arr,r)=>{const i=arr.findIndex(x=>x.id===r.id);if(i>=0)arr[i]={...arr[i],...r};else arr.push(r);n++;};
+  if(t==='quarries'){rows.forEach(r=>{if(!r.id)return;const o={};QCOLS.forEach(k=>{if(k in r)o[k]=r[k];});o.id=r.id;
+      if('bibliography' in o)o.bibliography=String(o.bibliography).split(/\s*\|\s*|\n/).filter(Boolean);
+      const ex=qById(r.id);if(ex){Object.assign(ex,o);n++;}else{DB.quarries.push({toolmarks:[],strata:[],media:[],...o});n++;}});}
+  else if(t==='toolmarks'||t==='strata'){const key=t==='strata'?'strata':'toolmarks';const miss=new Set();
+    rows.forEach(r=>{const q=qById(r.quarry_id);if(!q){miss.add(r.quarry_id);return;}const o={...r};delete o.quarry_id;delete o.table;if(!o.id)o.id=nextId(q[key],key==='strata'?'L-':'TM-');upsert(q[key],o);});
+    if(miss.size)toast('Skipped rows for unknown quarries: '+[...miss].join(', '));}
+  else if(t==='samples'){rows.forEach(r=>{if(!r.id)return;const o={...r};delete o.table;upsert(DB.samples,o);});}
+  else if(t==='analyses'){rows.forEach(r=>{if(!r.id)return;const o={...r};delete o.table;upsert(DB.analyses,o);});}
+  else {toast('Could not tell which table this CSV is. Name it e.g. samples.csv');return;}
+  DB=normalize(DB);save();toast(`Imported ${n} rows into ${t}`);
+}
+
+/* ============================== FORMS ============================== */
+function modal(html,cls){
+  const root=$('#modalRoot');root.innerHTML=`<div class="modalbg"><div class="modal ${cls||''}">${html}</div></div>`;
+  const bg=root.firstChild;bg.addEventListener('mousedown',e=>{if(e.target===bg)closeModal();});
+  root.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeModal);
+}
+function closeModal(){$('#modalRoot').innerHTML='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+function fieldHTML([k,label,type,o],val){
+  o=o||{};const id='f_'+k;let inp;
+  if(type==='textarea') inp=`<textarea id="${id}">${esc(val)}</textarea>`;
+  else if(type==='lines') inp=`<textarea id="${id}">${esc((val||[]).join('\n'))}</textarea>`;
+  else if(type==='select'){let list=o.list?V[o.list]:o.dyn==='quarries'?DB.quarries.map(q=>q.id):DB.samples.map(s=>s.id);
+    if(val&&!list.includes(val))list=[val,...list];
+    const lab=v=>o.dyn==='quarries'?(qById(v)?v+' — '+qById(v).name:v):v;
+    inp=`<select id="${id}">${list.includes('')?'':'<option value=""></option>'}${list.map(v=>`<option value="${esc(v)}"${v===val?' selected':''}>${esc(lab(v)||'—')}</option>`).join('')}</select>`;}
+  else inp=`<input id="${id}" type="${type==='number'?'number':type==='date'?'date':'text'}"${o.step?` step="${o.step}"`:type==='number'?' step="any"':''} value="${esc(val==null?'':val)}">`;
+  return `<div class="${o.full?'full':''}"><label for="${id}">${esc(label)}${o.req?' *':''}</label>${inp}${o.help?`<div class="help">${esc(o.help)}</div>`:''}</div>`;
+}
+function readForm(fields){const o={};fields.forEach(([k,,type])=>{const el=document.getElementById('f_'+k);if(!el)return;let v=el.value;
+  if(type==='lines')v=v.split('\n').map(s=>s.trim()).filter(Boolean);else if(type==='number')v=v===''?'':Number(v);else v=v.trim();o[k]=v;});return o;}
+function openForm(title,fields,obj,onSave,extra){
+  modal(`<h3>${esc(title)}</h3><form class="form" id="frm">${fields.map(f=>fieldHTML(f,obj[f[0]])).join('')}${extra||''}</form><div class="err" id="ferr"></div>
+   <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn" data-close>Cancel</button><button class="btn pri" id="fsave">Save</button></div>`);
+  const go=()=>{const o=readForm(fields);const miss=fields.filter(f=>f[3]&&f[3].req&&!o[f[0]]).map(f=>f[1]);if(miss.length){$('#ferr').textContent='Required: '+miss.join(', ');return;}
+    const err=onSave(o);if(err){$('#ferr').textContent=err;return;}closeModal();save();};
+  $('#fsave').onclick=go;$('#frm').onsubmit=e=>{e.preventDefault();go();};
+}
+function confirmBox(text,onYes){modal(`<p>${esc(text)}</p><div class="row" style="justify-content:flex-end"><button class="btn" data-close>Cancel</button><button class="btn pri" id="cyes" style="background:var(--bad);border-color:var(--bad)">Delete</button></div>`);$('#cyes').onclick=()=>{closeModal();onYes();save();};}
+function resizeImage(file,cb){const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const M=1600,s=Math.min(1,M/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',.82));};img.onerror=()=>toast('Could not read image');img.src=r.result;};r.readAsDataURL(file);}
+
+const ACTIONS={
+  'editor-on':()=>{editor=true;ls.set(LS_EDIT,'1');route();},
+  'discard':()=>{modal(`<p>Discard all local changes in this browser and reload the published data?</p><div class="row" style="justify-content:flex-end"><button class="btn" data-close>Cancel</button><button class="btn pri" id="dy">Discard</button></div>`);$('#dy').onclick=()=>{ls.del(LS_KEY);hasDraft=false;closeModal();load();};},
+  'export-json':()=>{const d=JSON.parse(JSON.stringify(DB));d.meta.updated=d.meta.updated||new Date().toISOString().slice(0,10);offerFile('data.json',JSON.stringify(d,null,2),'application/json');},
+  'dl':b=>{const t=b.dataset.t;if(t==='json-public')offerFile('istria-quarries.json',JSON.stringify(publicCopy(),null,2),'application/json');else{const n=t.slice(4);offerFile(n+'.csv',tableCSV(n,true),'text/csv');}},
+  'edit-meta':()=>openForm('Database information',F.meta,DB.meta,o=>{Object.assign(DB.meta,o);}),
+  'add-quarry':()=>openForm('New quarry',F.quarry,{precision:'approximate',status:'presumed'},o=>{if(qById(o.id))return 'That ID already exists.';DB.quarries.push({...o,toolmarks:[],strata:[],media:[]});setTimeout(()=>location.hash='#q-'+slug(o.id));}),
+  'edit-quarry':()=>{const q=window.__q,old=q.id;openForm('Edit quarry',F.quarry,q,o=>{if(o.id!==old&&qById(o.id))return 'That ID already exists.';Object.assign(q,o);if(o.id!==old){DB.samples.forEach(s=>{if(s.quarry_id===old)s.quarry_id=o.id;});setTimeout(()=>location.hash='#q-'+slug(o.id));}});},
+  'del-quarry':()=>{const q=window.__q;const nS=samplesOf(q.id).length;confirmBox(`Delete ${q.name} with its tool marks, beds and media${nS?`, and its ${nS} samples and their analyses`:''}?`,()=>{const sids=new Set(samplesOf(q.id).map(s=>s.id));DB.analyses=DB.analyses.filter(a=>!sids.has(a.sample_id));DB.samples=DB.samples.filter(s=>s.quarry_id!==q.id);DB.quarries=DB.quarries.filter(x=>x!==q);location.hash='#quarries';});},
+  'add-toolmark':()=>{const q=window.__q;openForm('New tool mark',F.toolmark,{},o=>{q.toolmarks.push({id:nextId(q.toolmarks,'TM-'),...o});});},
+  'edit-toolmark':b=>{const q=window.__q,m=q.toolmarks.find(x=>x.id===b.dataset.id);openForm('Edit tool mark',F.toolmark,m,o=>{Object.assign(m,o);});},
+  'del-toolmark':b=>{const q=window.__q;confirmBox('Delete this tool-mark record?',()=>{q.toolmarks=q.toolmarks.filter(x=>x.id!==b.dataset.id);});},
+  'add-stratum':()=>{const q=window.__q;openForm('New bed (added on top)',F.stratum,{bed:String(q.strata.length+1)},o=>{q.strata.push({id:nextId(q.strata,'L-'),...o});});},
+  'edit-stratum':b=>{const q=window.__q,m=q.strata.find(x=>x.id===b.dataset.id);openForm('Edit bed',F.stratum,m,o=>{Object.assign(m,o);});},
+  'del-stratum':b=>{const q=window.__q;confirmBox('Delete this bed?',()=>{q.strata=q.strata.filter(x=>x.id!==b.dataset.id);});},
+  'add-sample':()=>{if(!DB.quarries.length){toast('Add a quarry first');return;}const q=location.hash.startsWith('#q-')?window.__q:null;openForm('New sample',F.sample,{id:nextId(DB.samples,'S-'),quarry_id:q?q.id:''},o=>{if(sById(o.id))return 'That sample ID already exists.';DB.samples.push(o);});},
+  'edit-sample':b=>{const s=sById(b.dataset.id),old=s.id;openForm('Edit sample',F.sample,s,o=>{if(o.id!==old&&sById(o.id))return 'That sample ID already exists.';Object.assign(s,o);if(o.id!==old)DB.analyses.forEach(a=>{if(a.sample_id===old)a.sample_id=o.id;});});},
+  'del-sample':b=>{const n=analysesOf(b.dataset.id).length;confirmBox(`Delete sample ${b.dataset.id}${n?` and its ${n} analyses`:''}?`,()=>{DB.samples=DB.samples.filter(s=>s.id!==b.dataset.id);DB.analyses=DB.analyses.filter(a=>a.sample_id!==b.dataset.id);});},
+  'add-analysis':b=>openForm('New analysis',F.analysis,{id:nextId(DB.analyses,'A-'),sample_id:b.dataset.id},o=>{if(DB.analyses.some(a=>a.id===o.id))return 'That analysis ID already exists.';DB.analyses.push(o);}),
+  'edit-analysis':b=>{const a=DB.analyses.find(x=>x.id===b.dataset.id),old=a.id;openForm('Edit analysis',F.analysis,a,o=>{if(o.id!==old&&DB.analyses.some(x=>x.id===o.id))return 'That analysis ID already exists.';Object.assign(a,o);});},
+  'del-analysis':b=>confirmBox(`Delete analysis ${b.dataset.id}?`,()=>{DB.analyses=DB.analyses.filter(a=>a.id!==b.dataset.id);}),
+  'add-media':()=>mediaForm(null),
+  'edit-media':b=>mediaForm(window.__q.media.find(m=>m.id===b.dataset.id)),
+  'del-media':b=>{const q=window.__q;confirmBox('Delete this image record?',()=>{q.media=q.media.filter(m=>m.id!==b.dataset.id);});}
+};
+function mediaForm(m){
+  const q=window.__q;let uploaded=null;const obj=m?{...m,src:m.src&&m.src.startsWith('data:')?'':m.src}:{license:DB.meta.license||'CC BY 4.0',kind:'photo'};
+  openForm(m?'Edit image':'New image',F.media,obj,o=>{const src=uploaded||o.src||(m&&m.src)||'';if(!src)return 'Upload an image or give a file path.';
+    if(m)Object.assign(m,o,{src});else q.media.push({id:nextId(q.media,'M-'),...o,src});},
+    `<div class="full"><label>Upload image (resized to max 1600 px)</label><input type="file" accept="image/*" id="mup"><div class="help" id="mupst">${m&&m.src&&m.src.startsWith('data:')?'An embedded image is already stored. Upload a new one to replace it.':''}</div></div>`);
+  $('#mup').onchange=e=>{const f=e.target.files[0];if(!f)return;$('#mupst').textContent='Processing…';resizeImage(f,d=>{uploaded=d;$('#mupst').textContent=`Ready (${Math.round(d.length*0.75/1024)} KB).`;});};
+}
+
+/* ============================== ROUTER ============================== */
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-act]');if(a){e.preventDefault();const f=ACTIONS[a.dataset.act];if(f)f(a);return;}
+  const tr=e.target.closest('tr[data-href]');if(tr&&tr.dataset.href&&!e.target.closest('a,button'))location.hash=tr.dataset.href;
+});
+$('#editToggle').onclick=()=>{editor=!editor;ls.set(LS_EDIT,editor?'1':'0');route();};
+function route(){
+  if(!DB)return;
+  const h=(location.hash||'#map').slice(1);
+  const m=DB.meta;$('#siteTitle').textContent=m.short_title||m.title||'Roman Quarries of Istria';
+  $('#siteSub').textContent=(m.title&&m.short_title?'Geological and petrographic database':'')+(m.version?` · v${m.version}`:'');
+  $('#footCite').textContent=`${m.license||''}${m.authors?' · '+m.authors:''}${m.doi?' · doi:'+m.doi.replace(/^https?:\/\/doi.org\//,''):''}`;
+  $('#editToggle').textContent=editor?'Leave editor mode':'Editor mode';
+  const v=h.startsWith('q-')?'quarries':h;
+  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));
+  if(h.startsWith('q-')) viewQuarry(h.slice(2));
+  else if(h==='quarries') viewQuarries();
+  else if(h==='samples') viewSamples();
+  else if(h==='analyses') viewAnalyses();
+  else if(h==='about') viewAbout();
+  else viewMap();
+}
+window.addEventListener('hashchange',()=>{route();window.scrollTo(0,0);});
+load();
+</script>
+</body>
+</html>
